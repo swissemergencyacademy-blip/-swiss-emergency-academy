@@ -1,0 +1,61 @@
+name: iOS Build Check
+
+on:
+
+  push:
+
+    branches: [main]
+
+  workflow_dispatch:
+
+permissions:
+
+  contents: read
+
+jobs:
+
+  ios:
+
+    runs-on: macos-latest
+
+    timeout-minutes: 30
+
+    steps:
+
+      - name: Projekt laden
+
+        uses: actions/checkout@v6
+
+      - name: Flutter einrichten
+
+        uses: subosito/flutter-action@v2
+
+        with:
+
+          channel: stable
+
+      - name: Fehlende iOS-Dateien erzeugen
+
+        run: |
+
+          if [ ! -d ios ]; then
+
+            flutter create --platforms=ios \
+
+              --project-name app \
+
+              --org ch.swissemergencyacademybycourvoisier \
+
+              --no-pub "$RUNNER_TEMP/sea_ios"
+
+            cp -R "$RUNNER_TEMP/sea_ios/ios" ./ios
+
+          fi
+
+      - name: Abhaengigkeiten laden
+
+        run: flutter pub get
+
+      - name: iOS-Build pruefen
+
+        run: flutter build ios --release 
